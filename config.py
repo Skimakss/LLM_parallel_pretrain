@@ -127,5 +127,5 @@ PROMPTS_FOR_GENERATION = [
     "В будущем искусственный интеллект будет",
 ]
 
-FINAL_CANDIDATE = A100_CANDIDATE_5
-FINAL_RUN_NAME = "a100-candidate-5-lr4e-4-warmup0-acc10"
+FINAL_CANDIDATE = A100_CANDIDATE_4
+FINAL_RUN_NAME = "a100-candidate-4-lr4e-4-warmup0-acc20"
