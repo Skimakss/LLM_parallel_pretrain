@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+output_dir*
+memory_snapshots/
+*.pickle
+
+wandb/
+.env
