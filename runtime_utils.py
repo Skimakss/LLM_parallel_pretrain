@@ -87,7 +87,7 @@ def log_run_setup(current_run_name, training_config):
 
 
 def should_run_final_eval():
-    return RUN_MODE == "final" and is_main_process()
+    return RUN_MODE == "final"
 
 
 def should_save_memory_snapshot():
