@@ -6,3 +6,4 @@ wandb
 sentencepiece
 pyarrow
 flash-attn==2.7.3
+torch==2.10.0
