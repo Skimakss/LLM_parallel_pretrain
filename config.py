@@ -12,7 +12,7 @@ MEMORY_SNAPSHOT_DIR = "./memory_snapshots"
 SAVE_MEMORY_SNAPSHOT = False
 
 RUN_MODE = "final"  # "smoke" or "final"
-PARALLEL_MODE = "deepspeed"  # "baseline", "deepspeed", "fsdp"
+PARALLEL_MODE = "fsdp"  # "baseline", "deepspeed", "fsdp"
 DEEPSPEED_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "ds_zero3.json")
 FSDP_MODE = "full_shard auto_wrap"
 USE_FLASH_ATTN = True
