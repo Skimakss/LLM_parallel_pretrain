@@ -19,9 +19,11 @@ from config import (
     SMOKE_TRAIN_SIZE,
     SMOKE_TRAINING_CONFIG,
     TRAINING_CONFIG,
-    VALIDATION_SIZE
+    VALIDATION_SIZE,
+    USE_PRETOKENIZED_DATASET,
 )
-from data_utils import load_tokenized_dataset, prepare_tokenizer, split_dataset
+
+from data_utils import load_tokenized_dataset, prepare_dataset, prepare_tokenizer, split_dataset
 from model_utils import create_model, setup_torch_backend
 from runtime_utils import (
     build_final_training_config,
@@ -42,6 +44,7 @@ from runtime_utils import (
     get_peak_memory_metrics_mb,
 )
 
+# Temporary compatibility workaround for FSDP + current torch/transformers stack
 import torch.distributed.fsdp as torch_fsdp
 
 if not hasattr(torch_fsdp, "register_fsdp_forward_method"):
@@ -85,7 +88,18 @@ def train_model():
     start_memory_snapshot_recording()
 
     tokenizer = prepare_tokenizer()
+
+    if not USE_PRETOKENIZED_DATASET and is_main_process():
+        prepare_dataset(
+            smoke_test=(RUN_MODE == "smoke"),
+            smoke_size=SMOKE_TRAIN_SIZE if RUN_MODE == "smoke" else None,
+        )
+
+    if torch.distributed.is_available() and torch.distributed.is_initialized():
+        torch.distributed.barrier()
+
     dataset = load_tokenized_dataset()
+
     train_dataset, eval_dataset = split_dataset(
         dataset,
         validation_size=SMOKE_EVAL_SIZE if RUN_MODE == "smoke" else VALIDATION_SIZE,
@@ -142,15 +156,15 @@ def train_model():
         if is_main_process():
             print("TRAIN METRICS:", train_result.metrics, flush=True)
 
-        # trainer.save_state()
+        trainer.save_state()
         trainer.save_metrics("train", train_result.metrics)
 
-        # if RUN_MODE == "final":
-        #     final_model_dir = os.path.join(training_args.output_dir, "final_model")
-        #     trainer.save_model(final_model_dir)
+        if RUN_MODE == "final":
+            final_model_dir = os.path.join(training_args.output_dir, "final_model")
+            trainer.save_model(final_model_dir)
 
-        #     if is_main_process():
-        #         tokenizer.save_pretrained(final_model_dir)
+            if is_main_process():
+                tokenizer.save_pretrained(final_model_dir)
 
         if should_run_final_eval():
             print("Running final evaluation...")
@@ -165,13 +179,13 @@ def train_model():
                 print(f"Final evaluation results: {eval_results}")
                 trainer.save_metrics("eval", eval_results)
 
-            # if is_main_process():
-            #     save_generations(
-            #         trainer.model,
-            #         tokenizer,
-            #         training_args.output_dir,
-            #         PROMPTS_FOR_GENERATION,
-            #     )
+            if is_main_process():
+                save_generations(
+                    trainer.model,
+                    tokenizer,
+                    training_args.output_dir,
+                    PROMPTS_FOR_GENERATION,
+                )
     finally:
         if wandb.run is not None:
             wandb.finish()

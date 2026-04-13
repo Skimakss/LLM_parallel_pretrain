@@ -15,6 +15,7 @@ RUN_MODE = "final"  # "smoke" or "final"
 PARALLEL_MODE = "fsdp"  # "baseline", "deepspeed", "fsdp"
 DEEPSPEED_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "ds_zero3.json")
 FSDP_MODE = "full_shard auto_wrap"
+USE_PRETOKENIZED_DATASET = False
 USE_FLASH_ATTN = True
 USE_BF16 = True
 USE_FP16 = not USE_BF16
