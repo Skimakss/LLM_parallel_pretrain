@@ -120,13 +120,6 @@ def train_model():
 
         train_result = trainer.train()
         train_result.metrics.update(get_peak_memory_metrics_mb())
-        if wandb.run is not None and is_main_process():
-            wandb.log({
-                "peak_allocated_mb": train_result.metrics.get("peak_allocated_mb"),
-                "peak_reserved_mb": train_result.metrics.get("peak_reserved_mb"),
-                "seen_samples": train_result.metrics.get("seen_samples"),
-                "train_steps_per_second_computed": train_result.metrics.get("steps_per_second_computed"),
-            })
 
         train_result.metrics["seen_samples"] = get_seen_samples(
             trainer.state.global_step,
@@ -138,6 +131,14 @@ def train_model():
                 "global_step": trainer.state.global_step,
             }
         )
+        if wandb.run is not None and is_main_process():
+            wandb.log({
+                "peak_allocated_mb": train_result.metrics.get("peak_allocated_mb"),
+                "peak_reserved_mb": train_result.metrics.get("peak_reserved_mb"),
+                "seen_samples": train_result.metrics.get("seen_samples"),
+                "train_steps_per_second_computed": train_result.metrics.get("steps_per_second_computed"),
+            })
+
         if is_main_process():
             print("TRAIN METRICS:", train_result.metrics, flush=True)
 
