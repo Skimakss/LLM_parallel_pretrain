@@ -130,15 +130,15 @@ def train_model():
         if is_main_process():
             print("TRAIN METRICS:", train_result.metrics, flush=True)
 
-        trainer.save_state()
+        # trainer.save_state()
         trainer.save_metrics("train", train_result.metrics)
 
-        if RUN_MODE == "final":
-            final_model_dir = os.path.join(training_args.output_dir, "final_model")
-            trainer.save_model(final_model_dir)
+        # if RUN_MODE == "final":
+        #     final_model_dir = os.path.join(training_args.output_dir, "final_model")
+        #     trainer.save_model(final_model_dir)
 
-            if is_main_process():
-                tokenizer.save_pretrained(final_model_dir)
+        #     if is_main_process():
+        #         tokenizer.save_pretrained(final_model_dir)
 
         if should_run_final_eval():
             print("Running final evaluation...")
@@ -149,16 +149,17 @@ def train_model():
             eval_results = trainer.evaluate()
             eval_results.update(get_peak_memory_metrics_mb())
 
-            print(f"Final evaluation results: {eval_results}")
-            trainer.save_metrics("eval", eval_results)
-
             if is_main_process():
-                save_generations(
-                    trainer.model,
-                    tokenizer,
-                    training_args.output_dir,
-                    PROMPTS_FOR_GENERATION,
-                )
+                print(f"Final evaluation results: {eval_results}")
+                trainer.save_metrics("eval", eval_results)
+
+            # if is_main_process():
+            #     save_generations(
+            #         trainer.model,
+            #         tokenizer,
+            #         training_args.output_dir,
+            #         PROMPTS_FOR_GENERATION,
+            #     )
     finally:
         if wandb.run is not None:
             wandb.finish()
