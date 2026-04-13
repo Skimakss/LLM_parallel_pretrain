@@ -42,6 +42,10 @@ from runtime_utils import (
     get_peak_memory_metrics_mb,
 )
 
+import torch.distributed.fsdp as torch_fsdp
+
+if not hasattr(torch_fsdp, "register_fsdp_forward_method"):
+    torch_fsdp.register_fsdp_forward_method = lambda *args, **kwargs: None
 
 def train_model():
     validate_runtime_config()
